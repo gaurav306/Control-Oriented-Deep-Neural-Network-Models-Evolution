@@ -1,0 +1,44 @@
+IF_MAKE_DATA: 1
+#data_type_code: _DEBUG_xs or _FULL
+data_type_code: _FULL
+#data_type_code: _DEBUG_xs
+DEBUG_coloumns: 10000
+
+data:
+  input_csv_path: csv_data/
+  npy_save_path: Data_for_training/
+  config_save_path: configs/
+  save_results_dir: saved_results/All15_models/
+  noise_sd: 0.01
+  train_split: 0.666
+  vaidate_test_split: 0.166
+  # CHANGE THIS FOR EACH RUN
+  half_training: 0
+#------------------------------------------------------change this for each run----------------
+  #input_EP_csv_files: [ITA_LZ_162420_0_output.csv, NOR_TD.csv]   # [0,1]
+  #input_EP_csv_files: [TRD_noHVAC.csv, OSLO_noHVAC.csv]   # [0,1]
+  input_EP_csv_files: [ M0_TRONDHEIM.csv, M0_STEINKJER.csv]   # [0,1]
+  #data_split: 1a, 2a, 2b, 3a 
+  data_split: 2a
+  #data_split_1a: should have 3 cols. first is training
+  data_split_1a: [0,0,0]
+  #data_split_2a: should have 3 cols. first is training. second will be split half for Validation and Testing
+  data_split_2a: [0,1,1]
+  #data_split_2b: should have 3 cols. first is training. second will be split for Validation and Testing. 1month + 6month for Validation 7month + 12month for Testing
+  data_split_2b: [0,1,1]
+  #data_split_3a: should have 3 cols. Will be split in 3 parts based on train_split, vaidate_test_split
+  data_split_3a: [0,0,0]
+
+data_processor:
+  running_avg_window: 8
+  running_avg_col: [61,62,63,64,65]
+  columnno_X: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71]
+  columnno_X_future: [0, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
+  columnno_Y: [46, 47, 48, 49, 50, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71]
+  max_min_file: all_max_min_5Zone_dec.xlsx
+
+n_past: 288 #   672   288   168
+n_future: 96 #  96    96    24
+known_past_features: 51
+known_future_features: 27
+unknown_future_features: 15

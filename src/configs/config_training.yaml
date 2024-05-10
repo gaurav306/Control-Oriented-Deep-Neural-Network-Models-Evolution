@@ -1,0 +1,163 @@
+possible_loss: ['mse', 'mape']   # index 0 is default loss
+quantiles: [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
+optimizer: Adam
+Adam:
+  lr: 0.001
+  b1: 0.9
+  b2: 0.999
+  epsi: 1.0e-08
+SGD:
+  lr: 0.001
+  momentum: 0.9
+save_models_dir: saved_models/
+
+# model_num is type of model. Either its pymodconn where other config settings are used or its old_models where old model code is used
+model_num: 'pymodconn'
+
+if_seed: 0
+seed: 500
+
+training:
+  # 1: normal training, 2: training with CustomEarlyStopping(CES), 3: training with multiple runs and best model selection,  4: transfer learning 
+  # Decoder paper # 6 is basic training. #7 is training with early stopping measures and restarts
+  # Attn_scores # 8 is basic training. #9 is training with early stopping measures and restarts
+  training_type: 3  
+  # veriables for training_type 3
+  prelim_runs: 10
+  prelim_runs_epochs: 20
+
+  IF_MULTIPROCESS: 1       # 0: MULTIPROCESS window is not created, 1: MULTIPROCESS window is used
+  IF_TRAIN_AT_ALL: 1
+  run_number: 1
+  num_of_same_run: 1
+  
+  LOAD_or_TRAIN_MODEL: 'TRAIN'           # 'LOAD': load model, 'TRAIN': train model
+  LOAD_MODEL_PATH: saved_results/RNN_CIT2.yaml_07.06.2023-15.14.05.055_runNUMBER-1_modelcheckpoint_best.h5
+  IF_multipleGPU: 0
+  epochs: 50
+  batch_size: 512
+  seq_len: 20
+  ifLRS: 1
+  ifEarlyStop: 0
+  EarlyStop_patience: 25
+  EarlyStop_min_delta: 0.001
+  EarlyStop_start_from_epoch: 20
+  training_verbose: 2
+  if_validation: 1
+
+#settings for decoder paper
+decoder_paper:
+  use_decoder_paper: 0
+  dec_type: 1
+  dec_in_out_1: [27, 15, 1]  
+  dec_in_out_2: [27, 5, 3]
+  dec_in_out_3: [11, 3, 5]
+  dec_in_out_4: [12, 15, 4]
+  dec_in_out_5: [11, 15, 5]
+
+individual_runs:
+  use_individual_runs: 0
+  type: 'OneOf15-1'   # 'OneOf15-x' or 'OnlyIATs' or 'OnlyPOWERs' or 'OnlyCO2s' or 'OnlyZN-1' or 'OnlyZN-2' or 'OnlyZN-3' or 'OnlyZN-4' or 'OnlyZN-5' 
+  type_index: [1]
+
+if_attn_scores: 1
+
+#settings for transfer learning
+tl_case:
+  # start and end if tl_case runs is split into multiple runs
+  start: 0   # full run is 0 to 27 
+  end: 1
+
+  tl_type: 1
+  # 1: full model is fine tuned, 
+  # 2: 'some' layer is fine tuned, 
+  # 3: 'some' layer is fresh trained, 
+  # 4: Extra layer is added and trained
+  # 5: 'some' layer is fine tuned, then extra layer is added and trained
+  # 6: Extra layer is added and trained and then 'some' layer is fine tuned
+
+  # if tl_type is 2 or 3, then 'some' layer type
+  some_layer: [22]
+  #enc: all encoder layers
+  #dec: all decoder layers
+  #0 - encoder_past_inputs True
+  #1 - decoder_1_inputs True
+  #2 - dense True
+  #3 - dense_10 True
+  #4 - dropout True
+  #5 - dropout_3 True
+  #6 - bidirectional True
+  #7 - bidirectional_1 True
+  #8 - linear_layer True
+  #9 - linear_layer_5 True
+  #10 - encoder_1_selfMHA-1 True
+  #11 - decoder_1_selfMHA-1 True
+  #12 - glu_with_addnorm True
+  #13 - glu_with_addnorm_2 True
+  #14 - grn_layer True
+  #15 - decoder_1_crossMHA-1 True
+  #16 - glu_with_addnorm_3 True
+  #17 - concatenate True
+  #18 - grn_layer_1 True
+  #19 - linear_layer_11 True
+  #20 - bidirectional_2 True
+  #21 - linear_layer_12 True
+  #22 - time_distributed_23 True
+  #23 - merge_list True
+  #24 - lambda True
+  #25 - activation_2 True
+
+  # if tl_type is 4, then extra layer type
+  extra_layer_type: GRU                   # Dense-relu, Dense-sigmoid, Dense-tanh, LSTM, GRU, MHA
+  
+  # training parameters, i.e. if tl_type is 3 or 4
+  epochs: 50
+  batch_size: 384
+  lr: 0.001
+  optimizer: Adam
+
+  # if tl_type is 5 or 6. 
+  # For tl_type:5 Step one 5-1 is tuning model with tl_5_layer, then 5-2 is adding extra layer with tl_5_extra_layer_type
+  tl_5_1_layer: [22]
+  tl_5_1_lr: 0.0001
+  tl_5_1_optimizer: Adam
+  tl_5_1_epochs: 50
+  tl_5_1_batch_size: 512
+
+  tl_5_current: tune
+
+  tl_5_2_extra_layer_type: GRU
+  tl_5_2_epochs: 75
+  tl_5_2_batch_size: 512
+  tl_5_2_lr: 0.005         # lr for CWR_max_lr
+  tl_5_2_optimizer: Adam
+
+
+CustomEarlyStopping:
+  max_training_attempts: 5
+  check_epoch_index: 5    #epoch starts from 0
+  min_error: 25
+  error_type: mse
+
+CosineWarmRestart:
+  min_lr: 0.00001 
+  max_lr: 0.001 
+  steps_per_epoch: 68 
+
+  first_lr_drop_mult: 0.9
+  general_lr_decay: 0.93
+
+  if_warmup_or_cooldown_start: 0
+
+  init_cooldown_length: 50
+  init_cooldown_mult_factor: 1
+
+  warmup_length: 3
+  warmup_mult_factor: 1
+
+  if_post_warmup: 0
+
+  number_of_cooldowns_before_switch: 5
+
+  new_cooldown_length: 20
+  new_cooldown_mult_factor: 1
